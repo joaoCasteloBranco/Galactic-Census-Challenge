@@ -7,11 +7,20 @@
 </head>
 <body>
 
+    <input type="text" id="search-input" placeholder="Buscar planeta..." />
+    <button id="search-button">Buscar</button>
+
     <div id="planets"></div>
 
     <div id="planet-description"></div>
 
+    <div id="residents-container"></div>
+
     <script>
+
+        let planetsData = [];
+
+        document.getElementById('search-button').addEventListener('click', searchPlanet);
 
         async function fetchPlanets() {
             try {
@@ -22,7 +31,10 @@
 
 
                 console.log("Planets:");
-                data.results.forEach(planet => {
+                planetsData = data.results;
+
+                planetsData.forEach(planet => {
+                    console.log(planet)
                     const button = document.createElement('button');
                     button.textContent = planet.name;
 
@@ -37,12 +49,73 @@
 
         function displayPlanetDescription(planet) {
             const planetDescription = document.getElementById('planet-description');
-            planetDescription.innerHTML = `
-                <h2>${planet.name}</h2>
-                <p><strong>Clima:</strong> ${planet.climate}</p>
-                <p><strong>População:</strong> ${planet.population}</p>
-                <p><strong>Terreno:</strong> ${planet.terrain}</p>
+
+            if (planet) {
+                planetDescription.innerHTML = `
+                    <h2>${planet.name}</h2>
+                    <p><strong>Clima:</strong> ${planet.climate}</p>
+                    <p><strong>População:</strong> ${planet.population}</p>
+                    <p><strong>Terreno:</strong> ${planet.terrain}</p>
+                `;
+            } else {
+                planetDescription.innerHTML = `<p>Planeta não encontrado.</p>`;
+            }
+
+            document.getElementById('residents-container').innerHTML = '';
+
+            if (planet.residents.length > 0) {
+                fetchResidents(planet.residents);
+            } else {
+                document.getElementById('residents-container').innerHTML = '<p>Sem residentes famosos.</p>';
+            }
+        }
+
+        async function fetchResidents(residentUrls) {
+            const residentsContainer = document.getElementById('residents-container');
+            residentsContainer.innerHTML = '<p>Carregando residentes...</p>';
+
+            const residentsTable = document.createElement('table');
+            residentsTable.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Data de Nascimento</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
             `;
+            const tbody = residentsTable.querySelector('tbody');
+
+            try {
+                const residentsPromises = residentUrls.map(async url => {
+                    const response = await fetch(url);
+                    return response.json();
+                });
+
+                const residentsData = await Promise.all(residentsPromises);
+
+                residentsData.forEach(resident => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${resident.name}</td>
+                        <td>${resident.birth_year}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                residentsContainer.innerHTML = ''; // Remove mensagem de carregamento
+                residentsContainer.appendChild(residentsTable);
+
+            } catch (error) {
+                residentsContainer.innerHTML = '<p>Erro ao carregar os residentes.</p>';
+                console.error('Erro ao buscar os residentes:', error);
+            }
+        }
+
+        function searchPlanet() {
+            const planetToSearch = document.getElementById('search-input').value.toLowerCase();
+            const foundPlanet = planetsData.find(planet => planet.name.toLowerCase() === planetToSearch);
+            displayPlanetDescription(foundPlanet);
         }
 
         window.onload = fetchPlanets;
