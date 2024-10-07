@@ -8,6 +8,9 @@
 <body>
 
     <div id="planets"></div>
+
+    <div id="planet-description"></div>
+
     <script>
 
         async function fetchPlanets() {
@@ -23,6 +26,7 @@
                     const button = document.createElement('button');
                     button.textContent = planet.name;
 
+                    button.addEventListener('click', () => displayPlanetDescription(planet));
 
                     planets.appendChild(button);
                 });
@@ -31,7 +35,17 @@
             }
         }
 
-        fetchPlanets()
+        function displayPlanetDescription(planet) {
+            const planetDescription = document.getElementById('planet-description');
+            planetDescription.innerHTML = `
+                <h2>${planet.name}</h2>
+                <p><strong>Clima:</strong> ${planet.climate}</p>
+                <p><strong>População:</strong> ${planet.population}</p>
+                <p><strong>Terreno:</strong> ${planet.terrain}</p>
+            `;
+        }
+
+        window.onload = fetchPlanets;
     </script>
 </body>
 </html>
