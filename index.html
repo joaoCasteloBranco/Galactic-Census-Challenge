@@ -7,7 +7,7 @@
 </head>
 <body>
 
-    
+    <div id="planets"></div>
     <script>
 
         async function fetchPlanets() {
@@ -15,9 +15,17 @@
                 const response = await fetch('https://swapi.dev/api/planets/');
                 const data = await response.json();
                 
- 
+                const planets = document.getElementById('planets');
+
+
                 console.log("Planets:");
-                data.results.forEach(planet => console.log(planet.name));
+                data.results.forEach(planet => {
+                    const button = document.createElement('button');
+                    button.textContent = planet.name;
+
+
+                    planets.appendChild(button);
+                });
             } catch (error) {
                 console.error('Erro ao buscar os planetas:', error);
             }
